@@ -13,37 +13,43 @@ function shuffle(array) {
   return arr
 }
 
+// Derive deck key from a card: schein cards are grouped by id prefix, others by type.
+export function getDeckKey(card) {
+  if (card.type === 'schein') {
+    const parts = card.id.split('_')
+    parts.pop() // remove trailing number
+    return parts.join('_')
+  }
+  return card.type
+}
+
 function initDecks(cards, adultMode) {
   const filtered = adultMode ? cards : cards.filter(c => !c.adult)
-  return {
-    spielvorbereitung: {
-      remaining: shuffle(filtered.filter(c => c.usage === 'spielvorbereitung')),
-      drawn: [],
-    },
-    quest: {
-      remaining: shuffle(filtered.filter(c => c.usage === 'quest')),
-    },
-    spiel: {
-      remaining: shuffle(filtered.filter(c => c.usage === 'spiel')),
-      drawn: [],
-    },
-    questschein: {
-      remaining: shuffle(filtered.filter(c => c.usage === 'questschein')),
-      drawn: [],
-    },
+  const deckMap = {}
+
+  for (const card of filtered) {
+    const key = getDeckKey(card)
+    const isQuest = card.usage === 'quest'
+    if (!deckMap[key]) {
+      deckMap[key] = isQuest
+        ? { remaining: [], usage: card.usage }
+        : { remaining: [], drawn: [], usage: card.usage }
+    }
+    deckMap[key].remaining.push(card)
   }
+
+  for (const key of Object.keys(deckMap)) {
+    deckMap[key].remaining = shuffle(deckMap[key].remaining)
+  }
+
+  return deckMap
 }
 
 const initialState = {
   gameStarted: false,
   adultMode: false,
   cards: [],
-  decks: {
-    spielvorbereitung: { remaining: [], drawn: [] },
-    quest: { remaining: [] },
-    spiel: { remaining: [], drawn: [] },
-    questschein: { remaining: [], drawn: [] },
-  },
+  decks: {},
   activeCard: null,
   activeCategory: null,
   error: null,
@@ -75,25 +81,25 @@ function reducer(state, action) {
       return { ...state, activeCategory: action.category, activeCard: null }
     }
     case 'DRAW_CARD': {
-      const category = state.activeCategory
-      const deck = state.decks[category]
+      const { deckKey } = action.payload
+      const deck = state.decks[deckKey]
       if (!deck || deck.remaining.length === 0) return state
 
       const idx = Math.floor(Math.random() * deck.remaining.length)
       const card = deck.remaining[idx]
+      const isQuest = !('drawn' in deck)
 
-      if (category === 'quest') {
+      if (isQuest) {
         return { ...state, activeCard: { ...card, flipped: false } }
       } else {
         const remaining = [...deck.remaining]
         remaining.splice(idx, 1)
-        const drawn = [...deck.drawn, card]
         return {
           ...state,
           activeCard: { ...card, flipped: false },
           decks: {
             ...state.decks,
-            [category]: { remaining, drawn },
+            [deckKey]: { ...deck, remaining, drawn: [...deck.drawn, card] },
           },
         }
       }
@@ -106,15 +112,15 @@ function reducer(state, action) {
       return { ...state, activeCard: null }
     }
     case 'RESHUFFLE_DECK': {
-      const category = state.activeCategory
-      const deck = state.decks[category]
-      if (!deck || !deck.drawn) return state
+      const { deckKey } = action.payload
+      const deck = state.decks[deckKey]
+      if (!deck || !('drawn' in deck)) return state
       const remaining = shuffle([...deck.remaining, ...deck.drawn])
       return {
         ...state,
         decks: {
           ...state.decks,
-          [category]: { remaining, drawn: [] },
+          [deckKey]: { ...deck, remaining, drawn: [] },
         },
       }
     }

@@ -272,65 +272,127 @@ body {
   flex-direction: column;
 }
 
-.stack-actions {
+/* ── Deck Grid ── */
+.deck-grid {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.2rem 1.5rem;
   flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem;
+  justify-content: center;
+  align-items: flex-start;
 }
 
-/* ── Card Grid ── */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  padding: 1rem 1.5rem 2rem;
+.deck-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-@media (min-width: 600px) {
-  .card-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 900px) {
-  .card-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.card-thumb {
+/* Portrait deck card: 160 × 240 */
+.deck-card {
+  width: 160px;
+  height: 240px;
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--color-surface);
-  aspect-ratio: 2/3;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition), opacity var(--transition);
 }
 
-.card-thumb img {
+.deck-card:not(.deck-card--empty):hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 18px rgba(233, 69, 96, 0.4);
+  transform: translateY(-3px);
+}
+
+/* Landscape deck card: 240 × 160 */
+.deck-card--landscape {
+  width: 240px;
+  height: 160px;
+}
+
+.deck-card--empty {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.deck-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.card-thumb.card-drawn {
-  opacity: 0.5;
+.deck-empty-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
-.drawn-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: var(--color-success);
-  color: #fff;
-  font-size: 0.65rem;
+/* Held special button – same dimensions as portrait card */
+.held-btn {
+  width: 160px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent2);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font-family: 'Cinzel', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+
+.held-btn:not(:disabled):hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 18px rgba(233, 69, 96, 0.4);
+  transform: translateY(-3px);
+}
+
+.held-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.held-icon {
+  font-size: 1.8rem;
+}
+
+/* Per-deck reshuffle button */
+.btn-reshuffle {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.8rem;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  background: var(--color-accent2);
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: box-shadow var(--transition), transform var(--transition);
+  letter-spacing: 0.04em;
+}
+
+.btn-reshuffle:hover {
+  box-shadow: 0 0 10px rgba(15, 52, 96, 0.8);
+  transform: translateY(-1px);
 }
 
 /* ── Modal ── */
